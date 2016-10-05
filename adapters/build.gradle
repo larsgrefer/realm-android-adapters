@@ -7,6 +7,7 @@ apply plugin: 'findbugs'
 apply plugin: 'pmd'
 apply plugin: 'checkstyle'
 apply plugin: 'realm-android'
+apply plugin: 'io.freefair.android-maven-jars'
 
 android {
     compileSdkVersion rootProject.sdkVersion
@@ -82,33 +83,17 @@ task checkstyle(type: Checkstyle) {
     classpath = files()
 }
 
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
+tasks.withType(Javadoc) {
 
     options {
         title = "Realm Android Adapters ${project.version}"
         memberLevel = JavadocMemberLevel.PUBLIC
-        docEncoding = 'UTF-8'
-        encoding = 'UTF-8'
-        charSet = 'UTF-8'
         locale = 'en_US'
 
-        links "http://docs.oracle.com/javase/7/docs/api/"
         links "https://realm.io/docs/java/${rootProject.realmVersion}/api/"
-        linksOffline "http://developer.android.com/reference/", "${project.android.sdkDirectory}/docs/reference"
     }
+
     exclude '**/BuildConfig.java'
-    exclude '**/R.java'
-}
-
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
 }
 
 install {
@@ -181,15 +166,4 @@ artifactory {
             publishIvy = false
         }
     }
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-// See https://github.com/chrisbanes/gradle-mvn-push/pull/13
-afterEvaluate {
-    javadoc.classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    javadoc.classpath += project.android.libraryVariants.toList().first().javaCompile.classpath
 }
